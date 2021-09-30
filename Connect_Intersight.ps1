@@ -1,9 +1,11 @@
 Install-Module -Name Intersight.PowerShell
+$APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
+$SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
 
 $connect = @{
     BasePath = "https://intersight.com"
-    ApiKeyId = "6155e2297564612d33fca3b4/6155e2297564612d33fca3b8/6155e3b47564612d30e377ed"
-    ApiKeyFilePath = "secrectKey.txt" 
+    ApiKeyId = $APIKEY
+    ApiKeyFilePath = $SECRETKEYPATH
     HttpSignerHeader =  @("(request-target)", "Host", "Date", "Digest")
 }
 
