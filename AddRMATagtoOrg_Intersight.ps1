@@ -1,24 +1,30 @@
 Install-Module -Name Intersight.PowerShell
+$APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
+$SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
 
-# Modify KeyId and Path as needed for the desired account. 
-# https://github.com/CiscoDevNet/intersight-powershell/blob/master/GettingStarted.md
-#
 $connect = @{
     BasePath = "https://intersight.com"
-    ApiKeyId = "6155e2297564612d33fca3b4/6155e2297564612d33fca3b8/6155e3b47564612d30e377ed"
-    ApiKeyFilePath = "F:\PowerShell\Intersight\SecretKey.txt" 
-    HttpSingingHeader =  @("(request-target)", "Host", "Date", "Digest")
+    ApiKeyId = $APIKEY
+    ApiKeyFilePath = $SECRETKEYPATH
+    HttpSingerHeader =  @("(request-target)", "Host", "Date", "Digest")
+    # HttpSignerHeader =  @("(request-target)", "Host", "Date", "Digest")
+    # Bug filed for this typo and will be fixed in next release.  
+    # "HttpsignerHeader" should be used once the fix is in.
 }
-#Note - "HttpSingingHeader" is the correct syntax - the API has a typo (could be fixed at some point in the future and your scripts would need to be modified to correct the typo)
+
 Set-IntersightConfiguration @connect
 Get-IntersightConfiguration
 
-$NewOrgName = "testorg"
+
+$NewOrgName = Read-Host -Prompt "Enter the name of the organization"
+$NewEmail = Read-Host -Prompt "Enter the email address that will receive AutoRMA notifications for this organization. Separate multiple e-mail addresses with a comma and no spaces. Please note that existing tags for this organization will be overwritten by this one."
 Get-IntersightOrganizationOrganization -Name $NewOrgName
+
 #Add tags for automated RMA per org. Separate multiple e-mail addresses by a comma i.e. "joe@somedomain.com,sue@somedomain.com"
-$NewTag = Initialize-IntersightMoTag -Key "AutoRMAEmail" -Value "sue@somedomain.com"
 #Note - the email address(s) in here need to be correlative to a CCO Account
 #Previous values will be overwritten
+$NewTag = Initialize-IntersightMoTag -Key "AutoRMAEmail" -Value $NewEmail
+
 
 Set-IntersightOrganizationOrganization -Name $NewOrgName -Tags $NewTag
 
