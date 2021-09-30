@@ -1,15 +1,17 @@
 Install-Module -Name Intersight.PowerShell
+$APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
+$SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
 
-# Modify KeyId and Path as needed for the desired account. 
-# https://github.com/CiscoDevNet/intersight-powershell/blob/master/GettingStarted.md
-#
 $connect = @{
     BasePath = "https://intersight.com"
-    ApiKeyId = "6155e2297564612d33fca3b4/6155e2297564612d33fca3b8/6155e3b47564612d30e377ed"
-    ApiKeyFilePath = "F:\PowerShell\Intersight\SecretKey.txt" 
-    HttpSingingHeader =  @("(request-target)", "Host", "Date", "Digest")
+    ApiKeyId = $APIKEY
+    ApiKeyFilePath = $SECRETKEYPATH
+    HttpSingerHeader =  @("(request-target)", "Host", "Date", "Digest")
+    # HttpSignerHeader =  @("(request-target)", "Host", "Date", "Digest")
+    # Bug filed for this typo and will be fixed in next release.  
+    # "HttpsignerHeader" should be used once the fix is in.
 }
-#Note - "HttpSingingHeader" is the correct syntax - the API has a typo (could be fixed at some point in the future and your scripts would need to be modified to correct the typo)
+
 Set-IntersightConfiguration @connect
 Get-IntersightConfiguration
 
@@ -20,6 +22,7 @@ $NewRGName = "testorg-rg"
 #Create resource group
 New-IntersightResourceGroup -Name $NewRGName
 $GetRGbyname = Get-IntersightResourceGroup -Name $NewRGName
+
 #Create org
 New-IntersightOrganizationOrganization -Name $NewOrgName -ResourceGroups $GetRGbyname
 Get-IntersightOrganizationOrganization -Name $NewOrgName
