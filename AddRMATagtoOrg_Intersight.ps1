@@ -18,7 +18,7 @@ Get-IntersightConfiguration
 
 $NewOrgName = Read-Host -Prompt "Enter the name of the organization"
 $NewEmail = Read-Host -Prompt "Enter the email address that will receive AutoRMA notifications for this organization. Separate multiple e-mail addresses with a comma and no spaces. Please note that existing tags for this organization will be overwritten by this one."
-$OrgMOID = Get-IntersightOrganizationOrganization -Name $NewOrgName -Select "Moid" 
+$OrgMOID = Get-IntersightOrganizationOrganization -Name $NewOrgName
 
 #Add tags for automated RMA per org. Separate multiple e-mail addresses by a comma i.e. "joe@somedomain.com,sue@somedomain.com"
 #Note - the email address(s) in here need to be correlative to a CCO Account
