@@ -27,5 +27,5 @@ $org = Get-IntersightOrganizationOrganization -Name $NewOrgName
 $NewTag = Initialize-IntersightMoTag -Key "AutoRMAEmail" -Value $NewEmail
 
 
-$org | Set-IntersightOrganizationOrganization -Name $NewOrgName -Tags $NewTag
+$org | Set-IntersightOrganizationOrganization -Tags $NewTag
 
