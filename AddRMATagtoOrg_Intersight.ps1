@@ -1,5 +1,7 @@
 Install-Module -Name Intersight.PowerShell
+#Replace string in quotes with your API key in quotes
 $APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
+#Replace with correct path and file name for your secret key - keep quotes in place
 $SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
 
 $connect = @{
@@ -8,8 +10,8 @@ $connect = @{
     ApiKeyFilePath = $SECRETKEYPATH
     HttpSingingHeader =  @("(request-target)", "Host", "Date", "Digest")
     # HttpSignerHeader =  @("(request-target)", "Host", "Date", "Digest")
-    # Bug filed for this typo and will be fixed in next release.  
-    # "HttpsignerHeader" should be used once the fix is in.
+    # Bug filed for this typo and will be fixed in coming release.  
+    # "HttpsignerHeader" should be used once the fix is released.
 }
 
 Set-IntersightConfiguration @connect
