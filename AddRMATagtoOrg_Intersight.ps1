@@ -31,3 +31,6 @@ $NewTag = Initialize-IntersightMoTag -Key "AutoRMAEmail" -Value $NewEmail
 
 $org | Set-IntersightOrganizationOrganization -Tags $NewTag
 
+
+Write-Host "Verify that the tag was added or modified correctly in the API at "
+Write-Host  "https://intersight.com/apidocs/apirefs/api/v1/organization/Organizations/get/"
