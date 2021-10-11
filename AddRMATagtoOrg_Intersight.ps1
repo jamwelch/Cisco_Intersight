@@ -1,5 +1,7 @@
 Install-Module -Name Intersight.PowerShell
+#Replace string in quotes with your API key in quotes
 $APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
+#Replace with correct path and file name for your secret key - keep quotes in place
 $SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
 
 $connect = @{
