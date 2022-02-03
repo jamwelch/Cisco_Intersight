@@ -21,7 +21,7 @@ Get-IntersightConfiguration
 Get-IntersightOrganizationOrganization
 
 #Get the Organization by Name - Change Org Name as desired
-$OrgName = "Default"
+$OrgName = Read-Host -Prompt "Enter the name of the organization"
 $OrgByName = Get-IntersightOrganizationOrganization -Name $OrgName
 
 
