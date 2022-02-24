@@ -10,7 +10,7 @@ Summary: The Cisco Intersight Universal API Calls module provides
           so do not use this script unless explicitly prescribed by a Cisco engineer.
           
           The script assumes you have a csv formatted file containing 2 columns.
-          Find the file "example.csv" in this repository for this specific use.
+          Find the file "example.csv" in this repository.
           The file should be formatted in this fashion:
           
           serial_number,rma_email
