@@ -9,7 +9,8 @@ Summary: The Cisco Intersight Universal API Calls module provides
           Using the RMA tags on server objects in Intersight is NOT yes supported by Cisco, 
           so do not use this script unless explicitly prescribed by a Cisco engineer.
           
-          The script assumes you have a csv formatted file containing 2 columns.  
+          The script assumes you have a csv formatted file containing 2 columns.
+          Find the file "example.csv" in this repository for this specific use.
           The file should be formatted in this fashion:
           
           serial_number,rma_email
