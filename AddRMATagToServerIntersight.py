@@ -24,8 +24,8 @@ Summary:  This script will add and change the RMA tags for server objects in int
 """
 
 # Modify the api_key and key location below
-key_id = "61faf2187564612d33f048dc/61faf2187564612d33f048e0/622636837564612d310360c9"
-api_secret_file = "F:\DevNet\Intersight\DevNetSecretKey.txt"
+key_id = "replace with your key id"
+api_secret_file = "c:\replace\with\your\path\to\secretkey.txt"
 
 # Import needed Python modules
 import sys
@@ -146,11 +146,8 @@ def add_tags(email):
         new_tags_list.append(old_tag_dict)
     # Use the list of dictionaries to create the json formatted Tags object to replace the existing Tags code for each server
     new_tags = {'tags': new_tags_list}
-    print ("Proceeding with Update for " + sn + " at " + dn)
+    print ("Proceeding with Update for " + sn + " at " + dn)         
     try:
-        # Universal command to patch Intersight objects. This is where the magic happens!
-        # Pass the variables obtained from the identify_server function along with the new Tags JSON code
-        #call_api(hw,moid,new_tags)
         if hw == "blade":
             api_instance.update_compute_blade(moid, new_tags)
         if hw == "rack_unit":
