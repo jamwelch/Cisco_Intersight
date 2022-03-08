@@ -1,13 +1,11 @@
 """
 Author: James Welch
 Contact: jamwelch@cisco.com
-Summary: The Cisco Intersight Universal API Calls module provides
-          a set of functions that simplify creation, retrieval,
-          modification, and deletion of resources on Cisco Intersight.
-          
-          This script will add, remove, and change the RMA tags for server objects in intersight.
+Summary:  This script will add and change the RMA tags for server objects in intersight.
           Using the RMA tags on server objects in Intersight is NOT yes supported by Cisco, 
           so do not use this script unless explicitly prescribed by a Cisco engineer.
+          
+          The script does not delete any tags including pre-existing server tags or RMA tags not listed in the csv file.
           
           The script assumes you have a csv formatted file containing 2 columns.
           Find the file "example.csv" in this repository.
@@ -19,69 +17,125 @@ Summary: The Cisco Intersight Universal API Calls module provides
 
           Use the same headings as above in your data file.
           Make sure the serial numbers match the server object you intend to tag 
-          with the specific e-mail address. 
+          with a specific e-mail address. 
           
           This script currently does not support using multiple e-mail addresses for an RMA Tag.
         
 """
 
-# Copy intersight_universal_api_calls.py to local path and ensure it is in path (see print output to verify)
-# https://github.com/ugo-emekauwa/intersight-universal-api-calls.git
-
-# Modify the api_key and key location in the intersight_universal_api_calls.py script
+# Modify the api_key and key location below
+key_id = "61faf2187564612d33f048dc/61faf2187564612d33f048e0/622636837564612d310360c9"
+api_secret_file = "F:\DevNet\Intersight\DevNetSecretKey.txt"
 
 # Import needed Python modules
 import sys
 import json
-import requests
+import re
 import csv
 import os
 import intersight
-from intersight.intersight_api_client import IntersightApiClient
+from intersight.api import compute_api
 
-# Imports required modules from Intersight Universal API Calls (assumes the file is local and contains api key and secret key location.)
-from intersight_universal_api_calls import iu_get
-from intersight_universal_api_calls import iu_get_moid
-from intersight_universal_api_calls import iu_patch_moid
+# Define function for connecting securely to Intersight
+def get_api_client(key_id, api_secret_file, endpoint="https://intersight.com"):
+    with open(api_secret_file, 'r') as f:
+        api_key = f.read()
 
-# Variables for use in the script.
-#
-# Update the input_file variable with the name of the file to read. Ensure it is in the same file folder as a the script.
+    if re.search('BEGIN RSA PRIVATE KEY', api_key):
+        # API Key v2 format
+        signing_algorithm = intersight.signing.ALGORITHM_RSASSA_PKCS1v15
+        signing_scheme = intersight.signing.SCHEME_RSA_SHA256
+        hash_algorithm = intersight.signing.HASH_SHA256
+
+    elif re.search('BEGIN EC PRIVATE KEY', api_key):
+        # API Key v3 format
+        signing_algorithm = intersight.signing.ALGORITHM_ECDSA_MODE_DETERMINISTIC_RFC6979
+        signing_scheme = intersight.signing.SCHEME_HS2019
+        hash_algorithm = intersight.signing.HASH_SHA256
+
+    configuration = intersight.Configuration(
+        host=endpoint,
+        signing_info=intersight.signing.HttpSigningConfiguration(
+            key_id=key_id,
+            private_key_path=api_secret_file,
+            signing_scheme=signing_scheme,
+            signing_algorithm=signing_algorithm,
+            hash_algorithm=hash_algorithm,
+            signed_headers=[
+                intersight.signing.HEADER_REQUEST_TARGET,
+                intersight.signing.HEADER_HOST,
+                intersight.signing.HEADER_DATE,
+                intersight.signing.HEADER_DIGEST,
+            ]
+        )
+    )
+
+    return intersight.ApiClient(configuration)
+    print(configuration)
+
+          
+
+# Update the input_file variable with the name of the file to read. Ensure it is in the same location as the script.
 input_file = 'rma_email_list.csv'
 
-# Define API endpoints for reading data in Intersight.
-all_blades = "compute/Blades"
-all_rack_units = "compute/RackUnits"
+# Connect to Intersight as an API client
+api_client = get_api_client(key_id, api_secret_file)
 
-# Functions to be used in the script
-#
-# Retrieve json data on all servers
+# Call the compute API for Intersight
+api_instance = compute_api.ComputeApi(api_client)
+
+# Retrieve json formatted data on all servers
 def get_server_data():
-    blades = iu_get(all_blades)
-    rack_units = iu_get(all_rack_units)
-    # Create a list of dictionaries from the json data
-    blade_list = blades['Results']
-    rack_list = rack_units['Results']
+    blade_data = api_instance.get_compute_blade_list()
+    rack_data = api_instance.get_compute_rack_unit_list()
+    blade_list = blade_data['results']
+    rack_list = rack_data['results']
     global all_servers
-    all_servers = blade_list + rack_list
-
-# Loop through all of the servers to find ones listed in the file    
+    all_servers = [blade_list + rack_list]
+          
+# Loop through the list of all servers to find the ones listed in the file 
 def identify_server(sn):
-    for server in all_servers:
+    for s_list in all_servers:
         print("Searching for a server using identify server function")
-        if sn == server['Serial']:
-            global old_tags
-            global moid
-            moid = server['Moid']
-            global dn
-            dn = server['Dn']
-            old_tags = server['Tags']
-            global hw
-            if "blade" in dn:
-                hw = "compute/Blades"
-            if "rack" in dn:
-                hw = "compute/RackUnits"
-
+        #print(server)
+        for server in s_list:
+            if sn == server['serial']:
+                global old_tags
+                global moid
+                moid = server['moid']
+                global dn
+                dn = server['dn']
+                old_tags = server['tags']
+                print(old_tags)
+                global hw
+                if "blade" in dn:
+                    hw = "blade"
+                if "rack" in dn:
+                    hw = "rack_unit"
+                    
+# Determine if the existing tags need to be updated  
+def compare_tags(email):
+    # Create a dictionary for the rma tag
+    global rmatag
+    rmatag = dict()
+    rmatag = {"key": "AutoRMAEmail","value": email}
+    print("Running compare tags function.")
+    for tag in old_tags:
+        if tag["key"] == "AutoRMAEmail":
+            print("Found tag for " + sn + " at " + dn)
+            print(tag)
+            if tag['value'] == rmatag['value']:
+                print("This tag already exists for " + sn + " at " + dn)
+                break
+            elif tag['value'] != rmatag['value']:
+                print("This tag has changed, updating tag for " + sn + " at " + dn)
+                replace_tags(email)
+            else:
+                print("Error: Something went wrong.")
+        else:
+            print("Tag not detected for " + sn + " at " + dn)
+            add_tags(email)
+          
 # Add a tag to a server object                
 def add_tags(email):
     print("Running add tags function")
@@ -91,49 +145,29 @@ def add_tags(email):
     for old_tag_dict in old_tags:
         new_tags_list.append(old_tag_dict)
     # Use the list of dictionaries to create the json formatted Tags object to replace the existing Tags code for each server
-    new_tags = {'Tags': new_tags_list}
+    new_tags = {'tags': new_tags_list}
     print ("Proceeding with Update for " + sn + " at " + dn)
     try:
         # Universal command to patch Intersight objects. This is where the magic happens!
         # Pass the variables obtained from the identify_server function along with the new Tags JSON code
-        iu_patch_moid(hw,moid,new_tags)
+        #call_api(hw,moid,new_tags)
+        if hw == "blade":
+            api_instance.update_compute_blade(moid, new_tags)
+        if hw == "rack_unit":
+            api_instance.update_compute_rack_unit(moid, new_tags)
         print("Check API to verify that the tags are correct. https://intersight.com/apidocs/apirefs/api/v1/compute/Blades/get/#")
     except:
         print("Error")
-
-# Determine if the existing tags need to be updated       
-def compare_tags(email):
-    # Create a dictionary for the rma tag
-    global rmatag
-    rmatag = dict()
-    rmatag = {"Key": "AutoRMAEmail","Value": email}
-    print("Running compare tags function.")
-    for tag in old_tags:
-        if tag["Key"] == "AutoRMAEmail":
-            print("Found tag for " + sn + " at " + dn)
-            print(tag)
-            if tag['Value'] == rmatag['Value']:
-                print("This tag already exists for " + sn + " at " + dn)
-                break
-            elif tag['Value'] != rmatag['Value']:
-                print("This tag has changed, updating tag for " + sn + " at " + dn)
-                replace_tags(email)
-            else:
-                print("Error: Something went wrong.")
-        else:
-            print("Tag not detected for " + sn + " at " + dn)
-            add_tags(email)
 
 # Replace the RMA tag if the e-mail address has changed            
 def replace_tags(email):
     print("Running replace tags function")
     for tg in old_tags:
-        if tg['Key'] == rmatag['Key']:
+        if tg['key'] == rmatag['key']:
             old_tags.remove(tg)
             print("RMA tag removed for " + sn + " at " + dn)
             add_tags(email)
-            
-    
+                    
 # Run the script
 #
 # Open data file and read each line performing update function for each line
@@ -144,3 +178,5 @@ with open(input_file, 'r') as csvfile:
         sn = line['serial_number']
         identify_server(sn)
         compare_tags(email)
+          
+# The script will print logging information to help with debugging using a print function from each step of the script.      
