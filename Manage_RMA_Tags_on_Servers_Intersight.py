@@ -18,8 +18,7 @@ Summary:  This script will add and change the RMA tags for server objects in int
           Use the same headings as above in your data file.
           Make sure the serial numbers match the server object you intend to tag 
           with a specific e-mail address. 
-          
-          This script currently does not support using multiple e-mail addresses for an RMA Tag.
+                    
         
 """
 
@@ -76,7 +75,14 @@ def get_api_client(key_id, api_secret_file, endpoint="https://intersight.com"):
           
 
 # Update the input_file variable with the name of the file to read. Ensure it is in the same location as the script.
-input_file = 'rma_email_list.csv'
+# File should had 2 headings in top line "serial_number" & "rma_email".
+# File should use ";" and NOT "," as the delimiter.  This enables the functionality of tagging with mulitiple e-mail addresses separated by a comma.
+# Do not use quotes around the elements in the file.
+# Example.csv
+# serial_number;rma_email
+# S3R1ALNU1;personA@company.com,personB@company.com
+
+input_file = 'input_file.csv'
 
 # Connect to Intersight as an API client
 api_client = get_api_client(key_id, api_secret_file)
@@ -170,7 +176,7 @@ def replace_tags(email):
 # Open data file and read each line performing update function for each line
 get_server_data()
 with open(input_file, 'r') as csvfile:
-    for line in csv.DictReader(csvfile):
+    for line in csv.DictReader(csvfile, delimiter = ';'):
         email = line['rma_email']
         sn = line['serial_number']
         identify_server(sn)
