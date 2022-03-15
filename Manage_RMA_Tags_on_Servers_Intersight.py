@@ -11,9 +11,9 @@ Summary:  This script will add and change the RMA tags for server objects in int
           Find the file "example.csv" in this repository.
           The file should be formatted in this fashion:
           
-          serial_number,rma_email
-          SERIAl1,name@domain.com
-          SERIAL1,name@domain.com
+          serial_number;rma_email
+          SERIAl1;name@domain.com
+          SERIAL1;name@domain.com
 
           Use the same headings as above in your data file.
           Make sure the serial numbers match the server object you intend to tag 
