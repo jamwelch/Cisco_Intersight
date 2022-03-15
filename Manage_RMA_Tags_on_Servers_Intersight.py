@@ -2,7 +2,7 @@
 Author: James Welch
 Contact: jamwelch@cisco.com
 Summary:  This script will add and change the RMA tags for server objects in intersight.
-          Using the RMA tags on server objects in Intersight is NOT yes supported by Cisco, 
+          Using the RMA tags on server objects in Intersight is NOT yet supported by Cisco, 
           so do not use this script unless explicitly prescribed by a Cisco engineer.
           
           The script does not delete any tags including pre-existing server tags or RMA tags not listed in the csv file.
