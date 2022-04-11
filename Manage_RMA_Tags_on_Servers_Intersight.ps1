@@ -1,12 +1,32 @@
+<# Author: James Welch
+Contact: jamwelch@cisco.com
+Summary:  This script will add and change the RMA tags for server objects in intersight.
+          Using the RMA tags on server objects in Intersight is NOT yet supported by Cisco, 
+          so do not use this script unless explicitly prescribed by a Cisco engineer.
+          
+          The script does not delete any tags including pre-existing server tags or RMA tags not listed in the csv file.
+          
+          The script assumes you have a csv formatted file containing 2 columns.
+          Find the file "example.csv" in this repository.
+          The file should be formatted in this fashion:
+          
+          serial_number;rma_email
+          SERIAl1;name@domain.com
+          SERIAL1;name@domain.com
+          Use the same headings as above in your data file.
+          Make sure the serial numbers match the server object you intend to tag 
+          with a specific e-mail address.  #>
+          
 Install-Module -Name Intersight.PowerShell
 # Replace string in quotes with your API key in quotes
-$APIKEY = "61faf2187564612d33f048dc/61faf2187564612d33f048e0/622636837564612d310360c9"
+$APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
 # Replace with correct path and file name for your secret key - keep quotes in place
-$SECRETKEYPATH = "F:\DevNet\Intersight\powershell\RMATag\DevNetSecretKey.txt"
+$SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
+
 # Modify to match the name of your csv input file
 # File must use a semicolon for the delimiter
 # Separate multiple e-mail addresses for a single tag using a comma
-$InputFile = 'input.csv'
+$InputFile = 'example.csv'
 
 $connect = @{
     BasePath = "https://intersight.com"
