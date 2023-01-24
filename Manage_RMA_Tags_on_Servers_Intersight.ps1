@@ -46,13 +46,15 @@ $RMATagGood = $True
 # Open data file and read each line performing update function for each line
 $Input_file = Import-Csv -Path $InputFile -Delimiter ";"
 $Input_file | ForEach-Object {
+    $SN = $null
+    $EMAIL = $null
     $SN = $_.serial_number
     $EMAIL = $_.rma_email
     Write-Output "`n"
     Write-Output "Server with serial number $SN should get RMA tag for $EMAIL"
     
     # Filter through the list of all servers to find the ones listed in the file
-    $Server = Get-IntersightComputePhysicalSummary | Where-Object {$_.Serial -eq $SN}
+    $Server = Get-IntersightComputePhysicalSummary -Serial $SN
     $ServerMoid = $Server.Moid
     $ServerDn = $Server.Dn
     $ServerSN = $Server.Serial
