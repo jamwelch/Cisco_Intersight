@@ -98,6 +98,8 @@ def get_server_data():
     rack_list = rack_data['results']
     global all_servers
     all_servers = [blade_list + rack_list]
+    i = len(all_servers)
+    print("Found " + i + " servers")
           
 # Loop through the list of all servers to find the ones listed in the file 
 def identify_server(sn):
