@@ -1,6 +1,21 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
+#Added for telemetry
+import aide
+try:
+    aide.submit_statistics(
+        pid=”A12345", # This should be a valid PID
+        tool_id="09876",
+        metadata={
+            "potential_savings": 0.5,  # Hours
+            "report_savings": True,
+        },
+    )
+except Exception:
+    pass
+
 #Note: This can be easily modified to collect whatever data you want to collect from servers and fabric interconnects in Intersight
 
 # Modify the api_key and key location below
