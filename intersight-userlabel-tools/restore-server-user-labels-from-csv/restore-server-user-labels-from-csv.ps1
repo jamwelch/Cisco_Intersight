@@ -95,6 +95,24 @@ param(
 )
 
 # ---------------------------------------------------------------------------
+# WhatIf / Confirm propagation guard
+#
+# The Intersight.PowerShell module declares SupportsShouldProcess on every
+# cmdlet, including read-only Get-* ones. Without these defaults, passing
+# -WhatIf to this script also suppresses the Get-* calls and we would see
+# "Found 0 server(s)" with no real query happening. Force read-only
+# Intersight cmdlets to always execute regardless of -WhatIf / -Confirm.
+# The mutating Set-Intersight* calls stay gated by ShouldProcess below.
+# ---------------------------------------------------------------------------
+
+$PSDefaultParameterValues['Get-Intersight*:WhatIf']     = $false
+$PSDefaultParameterValues['Get-Intersight*:Confirm']    = $false
+$PSDefaultParameterValues['Find-Intersight*:WhatIf']    = $false
+$PSDefaultParameterValues['Find-Intersight*:Confirm']   = $false
+$PSDefaultParameterValues['Search-Intersight*:WhatIf']  = $false
+$PSDefaultParameterValues['Search-Intersight*:Confirm'] = $false
+
+# ---------------------------------------------------------------------------
 # Logging helpers
 # ---------------------------------------------------------------------------
 

@@ -38,7 +38,7 @@ Each folder contains its own `.ps1` and a detailed `README.md`. Read those befor
 
 2. **Generate an Intersight API key** in the Intersight UI:
    - **Settings -> API Keys -> Generate API Key**
-   - Choose **ECDSA P-256 + SHA256** (recommended)
+   - Select **API Key Version 3** (recommended; modern signing scheme). **Version 2** also works with this SDK if your account requires the legacy format.
    - Download the secret PEM file (it cannot be re-downloaded later) and store it somewhere outside source control
 
 3. **Take a UserLabel backup before any change**, so you always have a clean rollback point:
@@ -75,7 +75,7 @@ Each folder contains its own `.ps1` and a detailed `README.md`. Read those befor
 | PowerShell | 7.2 or later. Windows PowerShell 5.1 is not supported (Newtonsoft.Json conflicts in the Intersight SDK). |
 | Intersight SDK | `Intersight.PowerShell` >= 1.0.11 from PowerShell Gallery. |
 | Intersight account | SaaS (intersight.com) or Intersight Appliance. |
-| API key | API Key ID + ECDSA P-256 secret key (PEM). |
+| API key | API Key ID + secret key (PEM). **API Key Version 3** is recommended (modern signing scheme); **Version 2** also works with the SDK if your account requires the legacy format. The SDK auto-detects which version the key is. |
 | Account role | At minimum **Server Administrator** on the target organization(s) — needed for `Update` on `compute.Blade` and `compute.RackUnit`. Read-only roles will return 403 on writes. |
 | Network | Outbound HTTPS 443 to `intersight.com` or your appliance FQDN. |
 

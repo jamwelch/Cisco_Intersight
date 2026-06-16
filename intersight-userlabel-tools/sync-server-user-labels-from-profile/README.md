@@ -11,7 +11,7 @@ Set every Intersight server's **UserLabel** to match the **Name of its assigned 
 | PowerShell | 7.2 or later | The Intersight SDK targets .NET Standard 2.1 / .NET 6+. Windows PowerShell 5.1 has Newtonsoft.Json conflicts and is not supported. On Windows: `winget install --id Microsoft.PowerShell --source winget`. |
 | Module | `Intersight.PowerShell` `>= 1.0.11` | Install with `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository` (see **Setup** for fallbacks). Confirm with `Find-PSResource Intersight.PowerShell`. |
 | Intersight account | Active Intersight SaaS account, or Intersight Appliance | Must contain the target Organization(s) and the servers you want to relabel. |
-| API key | API Key ID + private key (PEM) | Generate in **Settings -> API Keys -> Generate API Key**. Choose **ECDSA P-256 + SHA256**. Save the secret file securely — it cannot be re-downloaded. |
+| API key | API Key ID + private key (PEM) | Generate in **Settings -> API Keys -> Generate API Key**. Select **API Key Version 3** (recommended; modern signing scheme). **Version 2** also works with this SDK if your account requires the legacy format. Save the secret file securely — it cannot be re-downloaded. |
 | Account role | At minimum **Server Administrator** for the target org(s), or any role with **Update** on `compute.Blade` and `compute.RackUnit` plus **Read** on `server.Profile` and `organization.Organization`. **Read Only** roles will return 403 on the update calls. | A 403 mid-run on a specific server is logged as Failed; the rest of the batch continues. |
 | Network | Outbound HTTPS 443 to `intersight.com` (or your appliance FQDN) | Verify with `Test-NetConnection intersight.com -Port 443`. |
 | Optional | `PSScriptAnalyzer` | For local linting: `Install-PSResource PSScriptAnalyzer -Scope CurrentUser -TrustRepository`. |
@@ -35,7 +35,7 @@ Set every Intersight server's **UserLabel** to match the **Name of its assigned 
 
    **Classic alternative** (only if PSResourceGet cannot be installed): `Install-Module Intersight.PowerShell -Scope CurrentUser`. Often fails with `InvalidAuthenticodeSignature` on corporate-locked machines — see the troubleshooting table below.
 
-2. **Generate an Intersight API key** in the UI (**Settings -> API Keys -> Generate API Key**, ECDSA P-256 + SHA256). Save the secret PEM somewhere safe:
+2. **Generate an Intersight API key** in the UI (**Settings -> API Keys -> Generate API Key**, select **Version 3** when prompted for API Key version). Save the secret PEM somewhere safe:
    - Store outside source control (the file is a credential).
    - On Windows, restrict ACLs to your user account only.
    - On macOS / Linux, set `chmod 600` on the PEM.

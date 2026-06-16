@@ -11,7 +11,7 @@ Restore Intersight server **UserLabel** values from a CSV backup. Companion to *
 | PowerShell | 7.2 or later | The Intersight SDK targets .NET Standard 2.1 / .NET 6+. Windows PowerShell 5.1 has Newtonsoft.Json conflicts and is not supported. On Windows: `winget install --id Microsoft.PowerShell --source winget`. |
 | Module | `Intersight.PowerShell` `>= 1.0.11` | Install with `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository` (see the sync script's **Setup** for fallbacks). Confirm with `Find-PSResource Intersight.PowerShell`. |
 | Intersight account | Active Intersight SaaS account, or Intersight Appliance | Must contain the servers referenced by Moid in the CSV. |
-| API key | API Key ID + private key (PEM) | Generate in **Settings -> API Keys -> Generate API Key**. Choose **ECDSA P-256 + SHA256**. Save the secret file securely — it cannot be re-downloaded. |
+| API key | API Key ID + private key (PEM) | Generate in **Settings -> API Keys -> Generate API Key**. Select **API Key Version 3** (recommended; modern signing scheme). **Version 2** also works with this SDK if your account requires the legacy format. Save the secret file securely — it cannot be re-downloaded. |
 | Account role | **Server Administrator** (or higher) on the target org(s), or any role with **Update** on `compute.Blade` and `compute.RackUnit`. Read Only roles will return 403 on update calls. | Per-server 403s are logged as Failed; the rest of the batch continues. |
 | Network | Outbound HTTPS 443 to `intersight.com` (or your appliance FQDN) | Verify with `Test-NetConnection intersight.com -Port 443`. |
 | Optional | `PSScriptAnalyzer` | For local linting: `Install-PSResource PSScriptAnalyzer -Scope CurrentUser -TrustRepository`. |
