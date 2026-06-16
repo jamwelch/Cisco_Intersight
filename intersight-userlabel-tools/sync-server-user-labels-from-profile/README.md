@@ -9,20 +9,31 @@ Set every Intersight server's **UserLabel** to match the **Name of its assigned 
 | Requirement | Version / Detail | Notes |
 |---|---|---|
 | PowerShell | 7.2 or later | The Intersight SDK targets .NET Standard 2.1 / .NET 6+. Windows PowerShell 5.1 has Newtonsoft.Json conflicts and is not supported. On Windows: `winget install --id Microsoft.PowerShell --source winget`. |
-| Module | `Intersight.PowerShell` `>= 1.0.11` | Install: `Install-Module Intersight.PowerShell -Scope CurrentUser`. Confirm the current version with `Find-Module Intersight.PowerShell`. |
+| Module | `Intersight.PowerShell` `>= 1.0.11` | Install with `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository` (see **Setup** for fallbacks). Confirm with `Find-PSResource Intersight.PowerShell`. |
 | Intersight account | Active Intersight SaaS account, or Intersight Appliance | Must contain the target Organization(s) and the servers you want to relabel. |
 | API key | API Key ID + private key (PEM) | Generate in **Settings -> API Keys -> Generate API Key**. Choose **ECDSA P-256 + SHA256**. Save the secret file securely — it cannot be re-downloaded. |
 | Account role | At minimum **Server Administrator** for the target org(s), or any role with **Update** on `compute.Blade` and `compute.RackUnit` plus **Read** on `server.Profile` and `organization.Organization`. **Read Only** roles will return 403 on the update calls. | A 403 mid-run on a specific server is logged as Failed; the rest of the batch continues. |
 | Network | Outbound HTTPS 443 to `intersight.com` (or your appliance FQDN) | Verify with `Test-NetConnection intersight.com -Port 443`. |
-| Optional | `PSScriptAnalyzer` | For local linting: `Install-Module PSScriptAnalyzer -Scope CurrentUser`. |
+| Optional | `PSScriptAnalyzer` | For local linting: `Install-PSResource PSScriptAnalyzer -Scope CurrentUser -TrustRepository`. |
 
 ## Setup
 
-1. **Install the SDK** (once per machine):
+1. **Install the SDK** (once per machine) using the modern Microsoft PSResourceGet installer:
 
    ```powershell
-   Install-Module Intersight.PowerShell -Scope CurrentUser
+   Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository
    ```
+
+   `Install-PSResource` avoids the legacy Authenticode certificate-revocation check that fails on many corporate-locked machines (proxy, EDR, blocked CRL endpoints).
+
+   **If `Install-PSResource` is not recognized** (PowerShell 7 builds older than 7.4 do not ship PSResourceGet), install it first and retry:
+
+   ```powershell
+   Install-Module Microsoft.PowerShell.PSResourceGet -Scope CurrentUser -Force -AllowClobber
+   Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository
+   ```
+
+   **Classic alternative** (only if PSResourceGet cannot be installed): `Install-Module Intersight.PowerShell -Scope CurrentUser`. Often fails with `InvalidAuthenticodeSignature` on corporate-locked machines — see the troubleshooting table below.
 
 2. **Generate an Intersight API key** in the UI (**Settings -> API Keys -> Generate API Key**, ECDSA P-256 + SHA256). Save the secret PEM somewhere safe:
    - Store outside source control (the file is a credential).
@@ -138,10 +149,11 @@ There is no automatic rollback — the script doesn't keep a backup of pre-chang
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
+| `Install-Module` fails with `InvalidAuthenticodeSignature` for `Intersight.PowerShell.psd1` | Legacy PowerShellGet (used by `Install-Module`) tries to verify the signing certificate's revocation status against an external Microsoft CRL/OCSP endpoint. On corporate-locked Windows this lookup is commonly blocked by proxy / EDR / TLS interception. The certificate itself is valid; the validator simply can't confirm it. | Use the modern installer instead: `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository`. If `Install-PSResource` is not recognized, install it first: `Install-Module Microsoft.PowerShell.PSResourceGet -Scope CurrentUser -Force -AllowClobber`, then re-run the `Install-PSResource` line. |
 | `401 Unauthorized` / `Signature verification failed` | Wrong `ApiKeyId`, wrong PEM, or key revoked | Re-check Key ID in UI; regenerate the key pair if needed and rerun. |
 | `403 Forbidden` on a specific server update (logged as FAILED, others succeed) | API key's role lacks Update on `compute.Blade` / `compute.RackUnit` in that org | Use **Server Administrator** or higher for the affected org and rerun; the script is idempotent. |
 | `404 Not Found` for the organization | `-Organization` name typo, or key belongs to a different account | `Get-IntersightOrganizationOrganization | Select-Object Name` and copy the exact name. |
-| `The term 'Set-IntersightConfiguration' is not recognized` | Module not installed, or running in Windows PowerShell 5.1 | `Install-Module Intersight.PowerShell -Scope CurrentUser` in **`pwsh` 7.x**. |
+| `The term 'Set-IntersightConfiguration' is not recognized` | Module not installed, or running in Windows PowerShell 5.1 | Open **`pwsh` 7.x** (not the blue Windows PowerShell 5.1 window) and run `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository`. |
 | Long hang, then network error | Corporate proxy / VPN required | Verify outbound HTTPS 443 reachability with `Test-NetConnection intersight.com -Port 443`. |
 | Profile shows `AssignedServer Moid not in fetched server list (different org or permission?)` | The profile is assigned to a server in an org your key cannot see (cross-org scenario, rare) | Run unscoped (omit `-Organization`) with a key that has visibility across the relevant orgs. |
 | All servers logged as SKIPPEDNOPROFILE | Either there really are no Server Profiles in scope, or the wrong org is selected | Check the profile count line near the top of the output; widen scope or pick the right org. |

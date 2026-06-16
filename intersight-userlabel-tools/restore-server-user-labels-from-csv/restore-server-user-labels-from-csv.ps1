@@ -67,7 +67,9 @@
 
 .NOTES
     Companion to sync-server-user-labels-from-profile.ps1 in the sibling directory.
-    Requires the Intersight.PowerShell SDK (Install-Module Intersight.PowerShell -Scope CurrentUser).
+    Requires the Intersight.PowerShell SDK. Recommended install (PowerShell 7.x):
+        Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository
+    See README.md for fallbacks if Install-PSResource is not available.
     See README.md alongside this script for full requirements, role needs, and troubleshooting.
 #>
 

@@ -9,12 +9,12 @@ Restore Intersight server **UserLabel** values from a CSV backup. Companion to *
 | Requirement | Version / Detail | Notes |
 |---|---|---|
 | PowerShell | 7.2 or later | The Intersight SDK targets .NET Standard 2.1 / .NET 6+. Windows PowerShell 5.1 has Newtonsoft.Json conflicts and is not supported. On Windows: `winget install --id Microsoft.PowerShell --source winget`. |
-| Module | `Intersight.PowerShell` `>= 1.0.11` | Install: `Install-Module Intersight.PowerShell -Scope CurrentUser`. Confirm current version with `Find-Module Intersight.PowerShell`. |
+| Module | `Intersight.PowerShell` `>= 1.0.11` | Install with `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository` (see the sync script's **Setup** for fallbacks). Confirm with `Find-PSResource Intersight.PowerShell`. |
 | Intersight account | Active Intersight SaaS account, or Intersight Appliance | Must contain the servers referenced by Moid in the CSV. |
 | API key | API Key ID + private key (PEM) | Generate in **Settings -> API Keys -> Generate API Key**. Choose **ECDSA P-256 + SHA256**. Save the secret file securely — it cannot be re-downloaded. |
 | Account role | **Server Administrator** (or higher) on the target org(s), or any role with **Update** on `compute.Blade` and `compute.RackUnit`. Read Only roles will return 403 on update calls. | Per-server 403s are logged as Failed; the rest of the batch continues. |
 | Network | Outbound HTTPS 443 to `intersight.com` (or your appliance FQDN) | Verify with `Test-NetConnection intersight.com -Port 443`. |
-| Optional | `PSScriptAnalyzer` | For local linting: `Install-Module PSScriptAnalyzer -Scope CurrentUser`. |
+| Optional | `PSScriptAnalyzer` | For local linting: `Install-PSResource PSScriptAnalyzer -Scope CurrentUser -TrustRepository`. |
 
 ## Setup
 
@@ -144,12 +144,13 @@ Re-running is safe and cheap:
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
+| `Install-Module` fails with `InvalidAuthenticodeSignature` for `Intersight.PowerShell.psd1` | Legacy PowerShellGet (used by `Install-Module`) tries to verify the signing certificate's revocation status against an external Microsoft CRL/OCSP endpoint. On corporate-locked Windows this lookup is commonly blocked by proxy / EDR / TLS interception. The certificate itself is valid; the validator simply can't confirm it. | Use the modern installer instead: `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository`. If `Install-PSResource` is not recognized, install it first: `Install-Module Microsoft.PowerShell.PSResourceGet -Scope CurrentUser -Force -AllowClobber`, then re-run the `Install-PSResource` line. |
 | `CSV is missing required column 'Moid'` (or `'UserLabel'`) | CSV was edited or exported with the wrong columns | Re-export with the backup one-liner above, or add the missing column. |
 | Many rows logged as `FAILED ... Server not found in current account` | Wrong API key (different account / tenant), or servers truly decommissioned | Confirm with `Get-IntersightComputeBlade | Where-Object Moid -eq '<moid>'` whether the Moid exists. |
 | All rows logged as `SKIPPEDEMPTY` | Your CSV has empty `UserLabel` values (probably intentional for an "unlabel everything" pass) | Re-run with `-AllowClear` once you have confirmed that's the intent. |
 | `401 Unauthorized` / `Signature verification failed` | Wrong `ApiKeyId`, wrong PEM, or key revoked | Re-check Key ID in UI; regenerate the key pair if needed. |
 | `403 Forbidden` on specific servers | API key's role lacks **Update** on `compute.Blade` / `compute.RackUnit` in the affected org | Use **Server Administrator** or higher for the affected org and rerun; the script is idempotent. |
-| `The term 'Set-IntersightConfiguration' is not recognized` | Module not installed, or running in Windows PowerShell 5.1 | `Install-Module Intersight.PowerShell -Scope CurrentUser` in **`pwsh` 7.x**. |
+| `The term 'Set-IntersightConfiguration' is not recognized` | Module not installed, or running in Windows PowerShell 5.1 | Open **`pwsh` 7.x** (not the blue Windows PowerShell 5.1 window) and run `Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository`. |
 | Long hang, then network error | Corporate proxy / VPN required | Verify outbound HTTPS 443 reachability with `Test-NetConnection intersight.com -Port 443`. |
 
 ## See also

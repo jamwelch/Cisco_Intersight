@@ -21,9 +21,20 @@ Each folder contains its own `.ps1` and a detailed `README.md`. Read those befor
    # PowerShell 7.2+ required. On Windows:
    winget install --id Microsoft.PowerShell --source winget
 
-   # Install the Intersight SDK
-   Install-Module Intersight.PowerShell -Scope CurrentUser
+   # Open PowerShell 7 (run `pwsh`), then install the Intersight SDK with the
+   # modern Microsoft installer (works behind corporate proxies / EDR that
+   # block legacy Authenticode CRL lookups):
+   Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository
    ```
+
+   If `Install-PSResource` is not recognized (PowerShell 7 builds older than 7.4 do not ship the modern installer), install it first and try again:
+
+   ```powershell
+   Install-Module Microsoft.PowerShell.PSResourceGet -Scope CurrentUser -Force -AllowClobber
+   Install-PSResource Intersight.PowerShell -Scope CurrentUser -TrustRepository
+   ```
+
+   The classic `Install-Module Intersight.PowerShell -Scope CurrentUser` still works on most machines, but on corporate-locked Windows it commonly fails with `InvalidAuthenticodeSignature` because legacy PowerShellGet cannot reach the Microsoft certificate revocation endpoints. Use `Install-PSResource` and that error class goes away.
 
 2. **Generate an Intersight API key** in the Intersight UI:
    - **Settings -> API Keys -> Generate API Key**
