@@ -19,9 +19,10 @@ Summary:  This script will add and change the RMA tags for server objects in int
           
 Install-Module -Name Intersight.PowerShell
 # Replace string in quotes with your API key in quotes
-$APIKEY = "YOUREXTREMELYLONGAPIKEYGOESHERE"
-# Replace with correct path and file name for your secret key - keep quotes in place
-$SECRETKEYPATH = "C:\PATH\TO\YOUR\SecretKey.txt"
+$APIKEY = "*"
+# Replace with correct path and file name for your key - keep quotes in place
+
+$YOURPATH = "C:\PATH\TO\*"
 
 # Modify to match the name of your csv input file
 # File must use a semicolon for the delimiter
@@ -31,7 +32,7 @@ $InputFile = 'example.csv'
 $connect = @{
     BasePath = "https://intersight.com"
     ApiKeyId = $APIKEY
-    ApiKeyFilePath = $SECRETKEYPATH
+    ApiKeyFilePath = $YOURPATH
     HttpSigningHeader =  @("(request-target)", "Host", "Date", "Digest")
 }
 
